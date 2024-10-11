@@ -1,0 +1,17 @@
+[10:00] Marie : Bonjour à tous, merci d'être présents aujourd'hui. Nous allons discuter de l'avancement du projet et des prochaines étapes à suivre. Pour commencer, Jean, pourrais-tu nous donner une mise à jour sur la partie backend ?
+
+[10:05] Jean : Bien sûr, Marie. Nous avons terminé l'intégration de l'API utilisateur, et nous sommes en train de finaliser les tests unitaires. Nous avons rencontré quelques problèmes avec la connexion à la base de données, mais cela devrait être réglé d'ici la fin de la semaine.
+
+[10:10] Marie : D'accord, merci Jean. Sarah, de ton côté, comment avance le design de l'interface utilisateur ?
+
+[10:15] Sarah : Tout se passe bien. J'ai terminé les maquettes des pages principales et je travaille maintenant sur l'expérience utilisateur pour le processus de paiement. J'aimerais avoir vos retours d'ici la fin de la semaine, si possible.
+
+[10:20] Marie : Très bien, on pourra organiser une session de feedback. Ahmed, côté marketing, où en sommes-nous ?
+
+[10:25] Ahmed : Pour le marketing, nous sommes prêts à lancer la campagne dès que nous aurons les visuels finaux. Nous travaillons aussi sur une stratégie de contenu pour augmenter l'engagement des utilisateurs.
+
+[10:30] Marie : Parfait. Pour conclure, les prochaines étapes sont les suivantes : Jean, tu termines les tests backend, Sarah, tu prépares les maquettes pour la revue, et Ahmed, tu affines la stratégie de contenu. Est-ce que tout est clair pour tout le monde ?
+
+[10:35] Tous : Oui, c'est clair.
+
+[10:40] Marie : Super, merci à tous pour votre travail. On se reparle en fin de semaine pour la suite. Bonne journée
