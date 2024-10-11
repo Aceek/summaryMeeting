@@ -6,8 +6,9 @@ import fs from 'fs-extra';
 import dotenv from 'dotenv';
 import { ChatOpenAI } from '@langchain/openai';
 import { DynamicTool } from '@langchain/core/tools';
-import { Client } from "langsmith";
-import { LangChainTracer } from "langchain/callbacks";
+import { ChatPromptTemplate, MessagesPlaceholder } from "@langchain/core/prompts";
+import { RunnableSequence } from "@langchain/core/runnables";
+import { AgentExecutor, createOpenAIFunctionsAgent } from "langchain/agents";
 
 import { transcribeAudio, FileTooLargeError } from './transcribeAudio.js';
 import { cleanText } from './cleanText.js';
@@ -20,12 +21,6 @@ import { processLargeAudioFile } from './processLargeAudioFile.js';
 import { logger } from './logger.js';
 
 dotenv.config();
-
-// LangSmith setup
-const client = new Client();
-const tracer = new LangChainTracer({
-  projectName: "Agent de Résumé Automatique des Réunions",
-});
 
 program
   .version('1.0.0')
@@ -46,7 +41,6 @@ const model = new ChatOpenAI({
   modelName: "gpt-3.5-turbo",
   temperature: 0,
   openAIApiKey: process.env.OPENAI_API_KEY,
-  callbacks: [tracer],
 });
 
 const tools = [
@@ -129,38 +123,48 @@ const tools = [
   }),
 ];
 
+const prompt = ChatPromptTemplate.fromMessages([
+  ["system", `You are an AI assistant designed to process meeting recordings or transcripts. 
+  Your task is to analyze the input, generate a summary, perform sentiment analysis, 
+  recognize speakers, generate visuals, and export the results. Follow these steps:
+
+  1. Process the input file to get the text content.
+  2. Clean and preprocess the text.
+  3. Generate a summary of the text.
+  4. Analyze the sentiment of the text.
+  5. Recognize and separate speakers in the text.
+  6. Generate visuals based on the text content.
+  7. Export all results to a folder.
+
+  Use the appropriate tool for each step and provide the results.`],
+  ["human", "{input}"],
+  new MessagesPlaceholder("agent_scratchpad"),
+]);
+
+const agent = await createOpenAIFunctionsAgent({
+  llm: model,
+  tools,
+  prompt,
+});
+
+const executor = new AgentExecutor({
+  agent,
+  tools,
+  verbose: true,
+});
+
 logger.info("Agent de Résumé Automatique des Réunions initialisé...");
 
 async function processFile() {
-  const run = await client.createRun({
-    name: "File Processing Run",
-    project_name: "Agent de Résumé Automatique des Réunions",
-  });
-
   try {
-    await client.updateRun(run.id, { status: "in_progress" });
-
-    const textContent = await tools[0].func();
-    const cleanedText = await tools[1].func(textContent);
-    const summary = await tools[2].func(cleanedText);
-    const sentiment = await tools[3].func(cleanedText);
-    const speakerRecognition = await tools[4].func(cleanedText);
-    const visuals = await tools[5].func(cleanedText);
-
-    const finalResults = {
-      summary,
-      sentiment,
-      speakerRecognition,
-      visuals
-    };
-
-    await exportResults(finalResults);
+    const result = await executor.invoke({
+      input: `Process the file ${inputFile}, generate a summary, analyze sentiment, recognize speakers, generate visuals, and export all results.`,
+    });
 
     logger.info("Traitement terminé. Résultats enregistrés dans le dossier 'output'.");
-    await client.updateRun(run.id, { status: "completed" });
+    logger.info("Résultat final:", result.output);
   } catch (error) {
     logger.error("Une erreur s'est produite lors du traitement:", error);
-    await client.updateRun(run.id, { status: "failed", error: error.message });
   } finally {
     logger.info(`Logs saved in: ${logger.getSessionDir()}`);
   }
